@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (c) 2021-2023 joelguittet and c-hashtable contributors
+ * Copyright joelguittet and c-hashtable contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,8 +100,8 @@ then using the HASHTABLE_API_VISIBILITY flag to "export" the same symbols the wa
  */
 typedef struct hashtable_element_s {
     struct hashtable_element_s *next; /**< Next element of the hashtable */
-    char *                      key;  /**< Element key */
-    void *                      e;    /**< Element itself */
+    char                       *key;  /**< Element key */
+    void                       *e;    /**< Element itself */
 } hashtable_element_t;
 
 /**
