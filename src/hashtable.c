@@ -38,6 +38,22 @@
 #include "hashtable.h"
 
 /******************************************************************************/
+/* Definitions                                                                */
+/******************************************************************************/
+
+#ifdef __WINDOWS__
+#define SEM_INIT(sem)  sem = CreateSemaphore(NULL, 1, 1, NULL)
+#define SEM_WAIT(sem)  WaitForSingleObject(sem, INFINITE)
+#define SEM_POST(sem)  ReleaseSemaphore(sem, 1, NULL)
+#define SEM_CLOSE(sem) CloseHandle(sem)
+#else
+#define SEM_INIT(sem)  sem_init(&sem, 0, 1)
+#define SEM_WAIT(sem)  sem_wait(&sem)
+#define SEM_POST(sem)  sem_post(&sem)
+#define SEM_CLOSE(sem) sem_close(&sem)
+#endif
+
+/******************************************************************************/
 /* Prototypes                                                                 */
 /******************************************************************************/
 
@@ -83,7 +99,7 @@ hashtable_create(size_t size, bool alloc) {
     hashtable->alloc = alloc;
 
     /* Initialize semaphore used to access the hashtable */
-    sem_init(&hashtable->sem, 0, 1);
+    SEM_INIT(hashtable->sem);
 
     return hashtable;
 }
@@ -103,7 +119,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
     assert(NULL != key);
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Compute hash value of the wanted key */
     size_t hash = hashtable_compute_hash(hashtable, key);
@@ -121,14 +137,14 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
             if ((true == hashtable->alloc) && (NULL != e) && (0 != size)) {
                 if (NULL == (curr->e = malloc(size))) {
                     /* Unable to allocate memory */
-                    sem_post(&hashtable->sem);
+                    SEM_POST(hashtable->sem);
                     return -1;
                 }
                 memcpy(curr->e, e, size);
             } else {
                 curr->e = e;
             }
-            sem_post(&hashtable->sem);
+            SEM_POST(hashtable->sem);
             return 0;
         }
         last = curr;
@@ -139,7 +155,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
     hashtable_element_t *hashtable_element = (hashtable_element_t *)malloc(sizeof(hashtable_element_t));
     if (NULL == hashtable_element) {
         /* Unable to allocate memory */
-        sem_post(&hashtable->sem);
+        SEM_POST(hashtable->sem);
         return -1;
     }
     memset(hashtable_element, 0, sizeof(hashtable_element_t));
@@ -148,7 +164,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
     if (NULL == (hashtable_element->key = strdup(key))) {
         /* Unable to allocate memory */
         free(hashtable_element);
-        sem_post(&hashtable->sem);
+        SEM_POST(hashtable->sem);
         return -1;
     }
 
@@ -158,7 +174,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
             /* Unable to allocate memory */
             free(hashtable_element->key);
             free(hashtable_element);
-            sem_post(&hashtable->sem);
+            SEM_POST(hashtable->sem);
             return -1;
         }
         memcpy(hashtable_element->e, e, size);
@@ -175,7 +191,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
     hashtable->count++;
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return 0;
 }
@@ -193,13 +209,13 @@ hashtable_get_count(hashtable_t *hashtable) {
     size_t count = 0;
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Get number of elements */
     count = hashtable->count;
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return count;
 }
@@ -219,7 +235,7 @@ hashtable_has_key(hashtable_t *hashtable, char *key) {
     bool found = false;
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Compute hash value of the wanted key */
     size_t hash = hashtable_compute_hash(hashtable, key);
@@ -236,7 +252,7 @@ hashtable_has_key(hashtable_t *hashtable, char *key) {
     }
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return found;
 }
@@ -255,7 +271,7 @@ hashtable_get_keys(hashtable_t *hashtable, char ***keys) {
     size_t count = 0;
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Get number of elements */
     count = hashtable->count;
@@ -280,7 +296,7 @@ hashtable_get_keys(hashtable_t *hashtable, char ***keys) {
     }
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return count;
 }
@@ -300,7 +316,7 @@ hashtable_lookup(hashtable_t *hashtable, char *key) {
     void *e = NULL;
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Compute hash value of the wanted key */
     size_t hash = hashtable_compute_hash(hashtable, key);
@@ -317,7 +333,7 @@ hashtable_lookup(hashtable_t *hashtable, char *key) {
     }
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return e;
 }
@@ -337,7 +353,7 @@ hashtable_remove(hashtable_t *hashtable, char *key) {
     void *e = NULL;
 
     /* Wait semaphore */
-    sem_wait(&hashtable->sem);
+    SEM_WAIT(hashtable->sem);
 
     /* Compute hash value of the wanted key */
     size_t hash = hashtable_compute_hash(hashtable, key);
@@ -365,7 +381,7 @@ hashtable_remove(hashtable_t *hashtable, char *key) {
     }
 
     /* Release semaphore */
-    sem_post(&hashtable->sem);
+    SEM_POST(hashtable->sem);
 
     return e;
 }
@@ -381,7 +397,7 @@ hashtable_release(hashtable_t *hashtable) {
     if (NULL != hashtable) {
 
         /* Wait semaphore */
-        sem_wait(&hashtable->sem);
+        SEM_WAIT(hashtable->sem);
 
         /* Release hashtable elements */
         for (size_t hash = 0; hash < hashtable->size; hash++) {
@@ -401,8 +417,8 @@ hashtable_release(hashtable_t *hashtable) {
         free(hashtable->table);
 
         /* Release semaphore */
-        sem_post(&hashtable->sem);
-        sem_close(&hashtable->sem);
+        SEM_POST(hashtable->sem);
+        SEM_CLOSE(hashtable->sem);
 
         /* Release hashtable instance */
         free(hashtable);
