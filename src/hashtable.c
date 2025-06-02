@@ -79,7 +79,7 @@ hashtable_t *
 hashtable_create(size_t size, bool alloc) {
 
     /* Create hashtable instance */
-    hashtable_t *hashtable = (hashtable_t *)malloc(sizeof(hashtable_t));
+    hashtable_t *hashtable = (hashtable_t *)calloc(1, sizeof(hashtable_t));
     if (NULL == hashtable) {
         /* Unable to allocate memory */
         return NULL;
@@ -87,7 +87,7 @@ hashtable_create(size_t size, bool alloc) {
     memset(hashtable, 0, sizeof(hashtable_t));
 
     /* Create table */
-    if (NULL == (hashtable->table = (hashtable_element_t **)malloc(size * sizeof(hashtable_element_t *)))) {
+    if (NULL == (hashtable->table = (hashtable_element_t **)calloc(1, size * sizeof(hashtable_element_t *)))) {
         /* Unable to allocate memory */
         free(hashtable);
         return NULL;
@@ -135,7 +135,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
                 curr->e = NULL;
             }
             if ((true == hashtable->alloc) && (NULL != e) && (0 != size)) {
-                if (NULL == (curr->e = malloc(size))) {
+                if (NULL == (curr->e = calloc(1, size))) {
                     /* Unable to allocate memory */
                     SEM_POST(hashtable->sem);
                     return -1;
@@ -152,7 +152,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
     }
 
     /* Element not found, create a new hashtable element */
-    hashtable_element_t *hashtable_element = (hashtable_element_t *)malloc(sizeof(hashtable_element_t));
+    hashtable_element_t *hashtable_element = (hashtable_element_t *)calloc(1, sizeof(hashtable_element_t));
     if (NULL == hashtable_element) {
         /* Unable to allocate memory */
         SEM_POST(hashtable->sem);
@@ -170,7 +170,7 @@ hashtable_add(hashtable_t *hashtable, char *key, void *e, size_t size) {
 
     /* Store element */
     if ((true == hashtable->alloc) && (NULL != e) && (0 != size)) {
-        if (NULL == (hashtable_element->e = malloc(size))) {
+        if (NULL == (hashtable_element->e = calloc(1, size))) {
             /* Unable to allocate memory */
             free(hashtable_element->key);
             free(hashtable_element);
@@ -280,7 +280,7 @@ hashtable_get_keys(hashtable_t *hashtable, char ***keys) {
     if (0 < count) {
 
         /* Create table of keys */
-        if (NULL != (*keys = (char **)malloc(count * sizeof(char *)))) {
+        if (NULL != (*keys = (char **)calloc(1, count * sizeof(char *)))) {
 
             /* Parse table and store keys */
             size_t index = 0;
