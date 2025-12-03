@@ -1,6 +1,7 @@
 # c-hashtable
 
-[![CI Badge](https://github.com/joelguittet/c-hashtable/workflows/ci/badge.svg)](https://github.com/joelguittet/c-hashtable/actions)
+[![Workflow check-code-format Badge](https://github.com/joelguittet/c-hashtable/workflows/check-code-format/badge.svg)](https://github.com/joelguittet/c-hashtable/actions)
+[![Workflow build Badge](https://github.com/joelguittet/c-hashtable/workflows/build/badge.svg)](https://github.com/joelguittet/c-hashtable/actions)
 [![Issues Badge](https://img.shields.io/github/issues/joelguittet/c-hashtable)](https://github.com/joelguittet/c-hashtable/issues)
 [![License Badge](https://img.shields.io/github/license/joelguittet/c-hashtable)](https://github.com/joelguittet/c-hashtable/blob/master/LICENSE)
 
